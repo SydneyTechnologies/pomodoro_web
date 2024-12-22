@@ -1,21 +1,57 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #ededed;
+  --work: #ba4a49;
+  --short-break: #38868a;
+  --long-break: #7070f8;
 }
 
-@media (prefers-color-scheme: dark) {
+.work {
+  --background: var(--work);
+  transition: all 0.35s ease-in-out;
+}
+
+.short-break {
+  --background: var(--short-break);
+  transition: all 0.35s ease-in-out;
+}
+
+.long-break {
+  --background: var(--long-break);
+  transition: all 0.35s ease-in-out;
+}
+
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.timer-bg {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.white-bg-opacity {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+@media screen and (max-width: 640px) {
+  nav span,
+  nav p {
+    display: none;
+  }
 }
