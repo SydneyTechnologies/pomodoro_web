@@ -2,7 +2,7 @@
 import Nav from "./components/Nav";
 import { TasksContainer } from "./components/TasksContainer";
 import TimerContainer from "./components/TimerContainer";
-import { usePomoStore } from "./pomoStore";
+import { usePomoStore } from "../store/pomoStore";
 export default function Home() {
   const timerType = usePomoStore((state) => state.timerType);
 

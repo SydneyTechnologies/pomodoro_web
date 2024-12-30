@@ -1,21 +1,29 @@
 "use client";
 import { TimerType } from "../types";
 import { CustomButton } from "./CustomButton";
-import { usePomoStore } from "../pomoStore";
-import { useEffect, useRef, useState } from "react";
+import { usePomoStore } from "../../store/pomoStore";
+import { useRef, useState } from "react";
+import { FiEdit3 } from "react-icons/fi";
+import { ImCheckmark2 } from "react-icons/im";
 
 export default function TimerContainer() {
   const availableTimers = Object.values(TimerType).map((value) => value);
 
   const [startTimer, setStartTimer] = useState(false);
-  const [timerDuration, setTimerDuration] = useState(25 * 60);
-  const [timerObj, setTimerObj] = useState<NodeJS.Timeout | null>(null);
-  const [initialTime, setInitialTime] = useState("25:00");
+  const [timerMinutes, setTimerMinutes] = useState<string | number>(25);
+  const [timerSeconds, setTimerSeconds] = useState<string | number>("00");
+  const [showEditTimer, setShowEditTimer] = useState(false);
 
   const timerRef = useRef<HTMLHeadingElement>(null);
 
-  const setTimerType = usePomoStore((state) => state.setTimerType);
   const timerType = usePomoStore((state) => state.timerType);
+  const timerDuration = usePomoStore((state) => state.timerDuration);
+  const initialTime = usePomoStore((state) => state.initialTime);
+  const timerObj = usePomoStore((state) => state.timerObj);
+  const setTimerType = usePomoStore((state) => state.setTimerType);
+  const setTimerDuration = usePomoStore((state) => state.setTimerDuration);
+  const setInitialTime = usePomoStore((state) => state.setInitialTime);
+  const setTimerObj = usePomoStore((state) => state.setTimerObj);
 
   const handleChangeTimerType = (timerName: TimerType) => {
     setTimerType(timerName);
@@ -97,6 +105,9 @@ export default function TimerContainer() {
   const handleInitialTimer = (_duration: number) => {
     const initialTimer = formatDuration(_duration);
 
+    setTimerMinutes(initialTimer.minutes);
+    setTimerSeconds(initialTimer.seconds);
+
     setInitialTime(`${initialTimer.minutes}:${initialTimer.seconds}`);
   };
 
@@ -130,18 +141,48 @@ export default function TimerContainer() {
             {/* <Image src="/hand.gif" width={100} height={100} alt="a dragon" /> */}
 
             <h1
-              className="text-7xl lg:text-9xl font-bold font-rubik"
+              className={`text-7xl lg:text-9xl font-bold font-rubik ${
+                showEditTimer && "hidden"
+              }`}
               ref={timerRef}
             >
               {initialTime}
             </h1>
+            <div className="flex items-center justify-center gap-4">
+              <div
+                className={`flex w-11/12 items-center justify-center initial-timer-bg ${
+                  !showEditTimer && "hidden"
+                }`}
+              >
+                <input
+                  value={timerMinutes}
+                  onChange={(e) => setTimerMinutes(e.target.value)}
+                  className="text-7xl text-center lg:text-9xl font-bold font-rubik w-5/12 pr-0 bg-transparent outline-none border-none"
+                />
+                <span className="text-7xl lg:text-9xl font-bold font-rubik">
+                  :
+                </span>
+                <input
+                  value={timerSeconds}
+                  onChange={(e) => setTimerSeconds(e.target.value)}
+                  className="text-7xl text-center lg:text-9xl font-bold font-rubik w-5/12 pl-0 bg-transparent outline-none border-none"
+                />
+              </div>
+            </div>
+
             <p>Remaining</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center justify-center gap-4 relative w-full">
             <CustomButton
               btnName={startTimer ? "Pause" : "Start"}
               onClick={toggleTimer}
             />
+            <div
+              onClick={() => setShowEditTimer(!showEditTimer)}
+              className="absolute right-3 lg:right-10 top-4 cursor-pointer text-2xl"
+            >
+              {showEditTimer ? <ImCheckmark2 /> : <FiEdit3 />}
+            </div>
           </div>
         </div>
       </div>
