@@ -10,7 +10,7 @@ export default function Nav() {
           <h1 className="text-lg font-bold">PomoTimer</h1>
         </div>
         <ul className="flex justify-center gap-2 items-center">
-          <li className="flex justify-center items-center gap-1 white-bg-opacity">
+          <li className="flex justify-center items-center gap-1 white-bg-opacity cursor-pointer">
             <IoMdSettings />
             <span>Settings</span>
           </li>
