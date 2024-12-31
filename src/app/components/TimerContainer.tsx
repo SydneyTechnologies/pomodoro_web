@@ -2,7 +2,7 @@
 import { TimerType } from "../types";
 import { CustomButton } from "./CustomButton";
 import { usePomoStore } from "../../store/pomoStore";
-import { useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { FiEdit3 } from "react-icons/fi";
 import { ImCheckmark2 } from "react-icons/im";
 
@@ -10,8 +10,8 @@ export default function TimerContainer() {
   const availableTimers = Object.values(TimerType).map((value) => value);
 
   const [startTimer, setStartTimer] = useState(false);
-  const [timerMinutes, setTimerMinutes] = useState<string | number>(25);
-  const [timerSeconds, setTimerSeconds] = useState<string | number>("00");
+  const [timerMinutes, setTimerMinutes] = useState<string | number>(25); // This is a problem, It is not synced with the store and always makes the edited minute time as 25
+  const [timerSeconds, setTimerSeconds] = useState<string | number>("00"); // This is also a problem. It needs to be somehow synced with the store
   const [showEditTimer, setShowEditTimer] = useState(false);
 
   const timerRef = useRef<HTMLHeadingElement>(null);
@@ -20,10 +20,16 @@ export default function TimerContainer() {
   const timerDuration = usePomoStore((state) => state.timerDuration);
   const initialTime = usePomoStore((state) => state.initialTime);
   const timerObj = usePomoStore((state) => state.timerObj);
+  const workDuration = usePomoStore((state) => state.workDuration);
+  const shortBreakDuration = usePomoStore((state) => state.shortBreakDuration);
+  const longBreakDuration = usePomoStore((state) => state.longBreakDuration);
   const setTimerType = usePomoStore((state) => state.setTimerType);
   const setTimerDuration = usePomoStore((state) => state.setTimerDuration);
   const setInitialTime = usePomoStore((state) => state.setInitialTime);
   const setTimerObj = usePomoStore((state) => state.setTimerObj);
+  const setTimerStateDuration = usePomoStore(
+    (state) => state.setTimerStateDuration
+  );
 
   const handleChangeTimerType = (timerName: TimerType) => {
     setTimerType(timerName);
@@ -65,6 +71,7 @@ export default function TimerContainer() {
     }
 
     setStartTimer((startTimer) => !startTimer);
+    setShowEditTimer(false);
 
     if (!startTimer) {
       handleStartTimer(timerDuration);
@@ -85,19 +92,18 @@ export default function TimerContainer() {
     let _duration;
     switch (timerName) {
       case TimerType.WORK:
-        _duration = 25 * 60;
+        _duration = workDuration;
 
         break;
       case TimerType.SHORT_BREAK:
-        _duration = 5 * 60;
+        _duration = shortBreakDuration;
 
         break;
       case TimerType.LONG_BREAK:
-        _duration = 15 * 60;
+        _duration = longBreakDuration;
 
         break;
     }
-
     setTimerDuration(_duration);
     return _duration;
   };
@@ -110,6 +116,55 @@ export default function TimerContainer() {
 
     setInitialTime(`${initialTimer.minutes}:${initialTimer.seconds}`);
   };
+
+  const handleValidateInputTime = ({
+    time,
+    validateMinute,
+  }: {
+    time: string;
+    validateMinute: boolean;
+  }) => {
+    try {
+      const setTime: Dispatch<SetStateAction<string | number>> = validateMinute
+        ? setTimerMinutes
+        : setTimerSeconds;
+
+      const parsedTime = parseInt(time);
+      if (isNaN(parsedTime)) {
+        setTime(0);
+      } else if (parsedTime > 60) {
+        setTime(60);
+      } else if (parsedTime < 0) {
+        setTime(0);
+      } else {
+        setTime(parsedTime);
+      }
+    } catch (error) {
+      // TODO: Handle Error by showing error toast form Shadcn/ui
+    }
+  };
+
+  const setNewTimer = () => {
+    const _minutes = Number(timerMinutes);
+    const _seconds = Number(timerSeconds);
+
+    if (_minutes < 0 || _seconds < 0) {
+      return;
+    }
+
+    const _duration = _minutes * 60 + _seconds;
+
+    setTimerDuration(_duration);
+    setTimerStateDuration(_duration);
+    handleInitialTimer(_duration);
+    resetTimer();
+  };
+
+  useEffect(() => {
+    if (showEditTimer) {
+      setNewTimer();
+    }
+  }, [showEditTimer, timerMinutes, timerSeconds]);
 
   return (
     <section className="flex justify-start flex-col items-center my-10 w-full">
@@ -156,7 +211,12 @@ export default function TimerContainer() {
               >
                 <input
                   value={timerMinutes}
-                  onChange={(e) => setTimerMinutes(e.target.value)}
+                  onChange={(e) =>
+                    handleValidateInputTime({
+                      time: e.target.value,
+                      validateMinute: true,
+                    })
+                  }
                   className="text-7xl text-center lg:text-9xl font-bold font-rubik w-5/12 pr-0 bg-transparent outline-none border-none"
                 />
                 <span className="text-7xl lg:text-9xl font-bold font-rubik">
@@ -164,7 +224,12 @@ export default function TimerContainer() {
                 </span>
                 <input
                   value={timerSeconds}
-                  onChange={(e) => setTimerSeconds(e.target.value)}
+                  onChange={(e) =>
+                    handleValidateInputTime({
+                      time: e.target.value,
+                      validateMinute: false,
+                    })
+                  }
                   className="text-7xl text-center lg:text-9xl font-bold font-rubik w-5/12 pl-0 bg-transparent outline-none border-none"
                 />
               </div>

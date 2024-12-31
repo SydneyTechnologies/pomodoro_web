@@ -15,8 +15,13 @@ interface PomoStoreType {
   setInitialTime: (initialTime: string) => void;
   timerObj: NodeJS.Timeout | null;
   setTimerObj: (timerObj: NodeJS.Timeout | null) => void;
-  timerStateDuration: number;
-  setTimerStateDuration: (timerStateDuration: number) => void;
+  workDuration: number;
+  setWorkDuration: (WorkDuration: number) => void;
+  shortBreakDuration: number;
+  setShortBreakDuration: (shortBreakDuration: number) => void;
+  longBreakDuration: number;
+  setLongBreakDuration: (longBreakDuration: number) => void;
+  setTimerStateDuration: (duration: number) => void;
 }
 
 export const usePomoStore = create<PomoStoreType>()(
@@ -37,8 +42,26 @@ export const usePomoStore = create<PomoStoreType>()(
   setInitialTime: (initialTime) => set({ initialTime }),
   timerObj: null,
   setTimerObj: (timerObj) => set({ timerObj }),
-  timerStateDuration: 25 * 60,
-  setTimerStateDuration: (timerStateDuration) => set({ timerStateDuration }),
+  workDuration: 25 * 60,
+  setWorkDuration: (workDuration) => set({ workDuration }),
+  shortBreakDuration: 5 * 60,
+  setShortBreakDuration: (shortBreakDuration) => set({ shortBreakDuration }),
+  longBreakDuration: 15 * 60,
+  setLongBreakDuration: (longBreakDuration) => set({ longBreakDuration }),
+  setTimerStateDuration: (duration) => {
+    const currentTimerState = usePomoStore.getState().timerType;
+    switch (currentTimerState) {
+      case TimerType.WORK:
+        usePomoStore.getState().setWorkDuration(duration);
+        break;
+      case TimerType.SHORT_BREAK:
+        usePomoStore.getState().setShortBreakDuration(duration);
+        break;
+      case TimerType.LONG_BREAK:
+        usePomoStore.getState().setLongBreakDuration(duration);
+        break;
+    }
+  }
 }), {
   name: "pomo-storage",
   // storage: createJSONStorage(() => localStorage),
